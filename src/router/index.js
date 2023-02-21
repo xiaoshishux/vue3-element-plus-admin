@@ -5,7 +5,13 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: HomeView
+    redirect:"Login"
+  }, 
+  // 登录页
+   {
+    path: '/login',
+    name: 'Login',
+    component: ()=>import('../views/account/Login.vue')
   },
   {
     path: '/about',
