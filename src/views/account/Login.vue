@@ -7,22 +7,26 @@
                 <li :class="{ 'current': current_menu === item.type }" v-for="item in data.tab_menu" :key="item.type"
                     @click="toggleMenu(item.type)">{{
                         item.label }}</li>
-                <!-- <li>注册</li> -->
+                <!-- <li>注册 current_menu = item.type</li> -->
             </ul>
-            <el-form>
-                <el-form-item>
+            <el-form ref="form" :model="data.form" :rules="data.form_rules">
+                <el-form-item prop="username">
                     <label class="form-label">用户名</label>
-                    <el-input />
+                    <el-input v-model="data.form.username" />
                 </el-form-item>
-                <el-form-item>
+                <el-form-item prop="password">
                     <label class="form-label">密码</label>
-                    <el-input type="password" />
+                    <el-input type="password" v-model="data.form.password" />
+                </el-form-item >
+                <el-form-item v-if="current_menu === 'register'" prop="passwords">
+                    <label class="form-label">确认密码</label>
+                    <el-input type="password" v-model="data.form.passwords" />
                 </el-form-item>
-                <el-form-item>
+                <el-form-item prop="code">
                     <label class="form-label">验证码</label>
                     <el-row :gutter="10">
                         <el-col :span="14">
-                            <el-input></el-input>
+                            <el-input v-model="data.form.code"></el-input>
                         </el-col>
                         <el-col :span="10">
                             <el-button type="success" class="el-button-block">获取验证码</el-button>
@@ -38,10 +42,22 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, toRefs } from 'vue'
 
 // data存储的是登录与注册的资源，方便v-for循环遍历出来
 const data = reactive({
+    form: {
+        username: "",  //用户名
+        password: "",  //密码
+        passwords: "", //确认密码
+        code: "",      //验证码
+    },
+    form_rules: {
+        username: [  //校验规则
+            { required: true, message: "请输入活动名称", trigger: 'change' },
+            { min: 3, max: 5, message: "长度在3到5个字符", trigger: 'change' }
+        ]
+    },
     tab_menu: [
         { type: "login", label: "登录" },
         { type: "register", label: "注册" }
@@ -55,17 +71,18 @@ const toggleMenu = ((type) => {
 })
 
 // do not use same name with ref
-const form = reactive({
-    name: '',
-    region: '',
-    date1: '',
-    date2: '',
-    delivery: false,
-    type: [],
-    resource: '',
-    desc: '',
-})
-
+// const form = reactive({
+//     item: {
+//         username: "",  //用户名
+//         password: "",  //密码
+//         passwords: "", //确认密码
+//         code: ""       //验证码
+//     }
+// })
+const dataItem = toRefs(data)
+// return {
+//     ...dataItem
+// }
 const onSubmit = () => {
     console.log('submit!')
 }
