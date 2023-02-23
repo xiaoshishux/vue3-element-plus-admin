@@ -58,6 +58,8 @@ const validate_name_rules = (rule, value, callback) => {
 // 校验密码
 const validate_password_rules = (rule, value, callback) => {
     let regPassword = validate_password(value);
+    // 获取“正确密码”
+    const passwordsValue = data.form.passwords
     if (value === "") {
         callback(new Error("请输入密码"))
     } else if (!regPassword) {
@@ -66,9 +68,12 @@ const validate_password_rules = (rule, value, callback) => {
         callback()
     }
 }
-// 校验正确密码
+// 校验确认密码
 const validate_passwords_rules = (rule, value, callback) => {
+    // 如果是登录，不需要校验确认密码，默认通过
+    if (data.current_menu === "login") { callback() }
     let regPassword = validate_password(value);
+    // 获取“密码”
     const passwordValue = data.form.password
     if (value === "") {
         callback(new Error("请输入密码"))
@@ -87,7 +92,7 @@ const validate_code_rules = (rule, value, callback) => {
     if (value === "") {
         callback(new Error("请输入验证码"))
     } else if (!regCode) {
-        callback(new Error("验证码不正确"))
+        callback(new Error("请输入6位的验证码"))
     } else {
         callback()
     }
@@ -103,9 +108,6 @@ const data = reactive({
     form_rules: {
         username: [  //校验规则
             { validator: validate_name_rules, trigger: 'change' },
-            { validator: validate_password_rules, trigger: 'change' },
-            { validator: validate_passwords_rules, trigger: 'change' },
-            { validator: validate_code_rules, trigger: 'change' },
             // { required: true, message: "请输入活动名称", trigger: 'change' },
             // { min: 3, max: 5, message: "长度在3到5个字符", trigger: 'change' }
             //简单来说就是，当mput输入值时’便会开始执行第＿条校验规则＿校验必填项’如果输
@@ -113,13 +115,22 @@ const data = reactive({
             // 而会触发第二条校验规则的mm和max，妇果不符合mjn或max规定的长度字等，便会显示第
             // 二条校验规则的mcssage;如果有第三条校验规则出现，以此类推即可。ElemenˉPlus提供的校
             // 验规则相对比较简单’如果是无法满足校验需求田复杂情况，就需要自定义校验规则°
+        ],
+        password: [
+            { validator: validate_password_rules, trigger: 'change' },
+        ],
+        passwords: [
+            { validator: validate_passwords_rules, trigger: 'change' },
+        ],
+        code: [
+            { validator: validate_code_rules, trigger: 'change' },
         ]
     },
-
     tab_menu: [
         { type: "login", label: "登录" },
         { type: "register", label: "注册" }
-    ]
+    ],
+    current_menu: 'login'
 })
 
 // 默认状态的高亮显示，就不会，两项高亮都显示
