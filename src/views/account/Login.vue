@@ -17,7 +17,7 @@
                 <el-form-item prop="password">
                     <label class="form-label">密码</label>
                     <el-input type="password" v-model="data.form.password" />
-                </el-form-item >
+                </el-form-item>
                 <el-form-item v-if="current_menu === 'register'" prop="passwords">
                     <label class="form-label">确认密码</label>
                     <el-input type="password" v-model="data.form.passwords" />
@@ -43,7 +43,55 @@
 
 <script setup>
 import { reactive, ref, toRefs } from 'vue'
+import { validate_email, validate_password, validate_code } from "../../utils/validate.js"
+// 校验邮箱
+const validate_name_rules = (rule, value, callback) => {
+    let regEmail = validate_email(value)
+    if (value === '') {
+        callback(new Error("请输入邮箱"))
+    } else if (!regEmail) {
+        callback(new Error("邮箱格式不正确"))
+    } else {
+        callback()
+    }
+}
+// 校验密码
+const validate_password_rules = (rule, value, callback) => {
+    let regPassword = validate_password(value);
+    if (value === "") {
+        callback(new Error("请输入密码"))
+    } else if (!regPassword) {
+        callback(new Error("请输入>=6并且<=20位的密码，包含数字、字母"))
+    } else {
+        callback()
+    }
+}
+// 校验正确密码
+const validate_passwords_rules = (rule, value, callback) => {
+    let regPassword = validate_password(value);
+    const passwordValue = data.form.password
+    if (value === "") {
+        callback(new Error("请输入密码"))
+    } else if (!regPassword) {
+        callback(new Error("请输入>=6并且<=20位的密码，包含数字、字母"))
+    } else if (passwordValue && passwordValue !== value) {
+        callback(new Error("两次密码不一致"))
+    } else {
+        callback()
+    }
+}
 
+// 校验验证码
+const validate_code_rules = (rule, value, callback) => {
+    let regCode = validate_code(value);
+    if (value === "") {
+        callback(new Error("请输入验证码"))
+    } else if (!regCode) {
+        callback(new Error("验证码不正确"))
+    } else {
+        callback()
+    }
+}
 // data存储的是登录与注册的资源，方便v-for循环遍历出来
 const data = reactive({
     form: {
@@ -54,15 +102,26 @@ const data = reactive({
     },
     form_rules: {
         username: [  //校验规则
-            { required: true, message: "请输入活动名称", trigger: 'change' },
-            { min: 3, max: 5, message: "长度在3到5个字符", trigger: 'change' }
+            { validator: validate_name_rules, trigger: 'change' },
+            { validator: validate_password_rules, trigger: 'change' },
+            { validator: validate_passwords_rules, trigger: 'change' },
+            { validator: validate_code_rules, trigger: 'change' },
+            // { required: true, message: "请输入活动名称", trigger: 'change' },
+            // { min: 3, max: 5, message: "长度在3到5个字符", trigger: 'change' }
+            //简单来说就是，当mput输入值时’便会开始执行第＿条校验规则＿校验必填项’如果输
+            // 入空的字符串，则触发required显示message;如果输入不为空’则不会触发第＿条校验规则，
+            // 而会触发第二条校验规则的mm和max，妇果不符合mjn或max规定的长度字等，便会显示第
+            // 二条校验规则的mcssage;如果有第三条校验规则出现，以此类推即可。ElemenˉPlus提供的校
+            // 验规则相对比较简单’如果是无法满足校验需求田复杂情况，就需要自定义校验规则°
         ]
     },
+
     tab_menu: [
         { type: "login", label: "登录" },
         { type: "register", label: "注册" }
     ]
 })
+
 // 默认状态的高亮显示，就不会，两项高亮都显示
 let current_menu = ref(data.tab_menu[0].type);
 // 创建点击的事件，来回切换高亮状态
