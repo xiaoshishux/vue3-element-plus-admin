@@ -29,7 +29,7 @@
                             <el-input v-model="data.form.code"></el-input>
                         </el-col>
                         <el-col :span="10">
-                            <el-button type="success" class="el-button-block">获取验证码</el-button>
+                            <el-button type="success" class="el-button-block" @click="handlerGetCode">获取验证码</el-button>
                         </el-col>
                     </el-row>
                 </el-form-item>
@@ -42,8 +42,19 @@
 </template>
 
 <script setup>
-import { reactive, ref, toRefs } from 'vue'
+import { reactive, ref, toRefs, getCurrentInstance } from 'vue'
 import { validate_email, validate_password, validate_code } from "../../utils/validate.js"
+import {GetCode} from "@/api/common"
+const instance = getCurrentInstance()
+const { ctx } = getCurrentInstance()
+console.log(instance)
+console.log(ctx)
+// 获取验证码
+const {proxy} = getCurrentInstance()
+const  handlerGetCode = ()=>{
+    // proxy.$axios.post("http://v3.web-jshtml.cn/api/getCode/")
+    GetCode()
+}
 // 校验邮箱
 const validate_name_rules = (rule, value, callback) => {
     let regEmail = validate_email(value)
