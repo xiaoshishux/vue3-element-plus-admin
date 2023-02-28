@@ -1,7 +1,7 @@
 import axios from "axios"
-
+// console.log(process.env.VUE_APP_API)
 const service = axios.create({
-    baseURL: "/devApi", // 请求地址
+    baseURL: "process.env.VUE_APP_API", // 请求地址
     timeout: 5000, //超时
 })
 
