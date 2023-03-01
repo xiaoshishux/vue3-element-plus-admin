@@ -29,12 +29,14 @@
                             <el-input v-model="data.form.code"></el-input>
                         </el-col>
                         <el-col :span="10">
-                            <el-button type="success" class="el-button-block" @click="handlerGetCode">获取验证码</el-button>
+                            <el-button type="danger" class="el-button-block" @click="handlerGetCode">获取验证码</el-button>
                         </el-col>
                     </el-row>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="danger" @click="onSubmit" class="el-button-block">登录</el-button>
+                    <el-button type="danger" @click="onSubmit" class="el-button-block" disabled>
+                        {{ data.current_menu = "login" ? "登录" : "注册" }}
+                    </el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -44,16 +46,62 @@
 <script setup>
 import { reactive, ref, toRefs, getCurrentInstance } from 'vue'
 import { validate_email, validate_password, validate_code } from "../../utils/validate.js"
-import {GetCode} from "@/api/common"
-const instance = getCurrentInstance()
-const { ctx } = getCurrentInstance()
-console.log(instance)
-console.log(ctx)
+import { GetCode } from "@/api/common"
+import { response } from 'express';
+// const instance = getCurrentInstance()
+// const { ctx } = getCurrentInstance()
+// console.log(instance)
+// console.log(ctx)
 // 获取验证码
-const {proxy} = getCurrentInstance()
-const  handlerGetCode = ()=>{
-    // proxy.$axios.post("http://v3.web-jshtml.cn/api/getCode/")
-    GetCode()
+const { proxy } = getCurrentInstance()
+const handlerGetCode = () => {
+    const username = data.form.username
+    const password = data.form.password
+    const passwords = data.form.passwords
+    //   校验用户名
+    if (!validate_email(username)) {
+        proxy.$message({
+            message: "用户名不能为空或格式不正确",
+            type: "error"
+        })
+        return false
+    }
+    // 校验密码
+    if (!validate_password(password)) {
+        proxy.$message({
+            message: "密码不能为空或格式不正确",
+            type: "error"
+        })
+        return false
+    }
+    // 判断为 注册 时，校验两次密码
+    if (data.current_menu === 'register' && (password !== passwords)) {
+        proxy.$message({
+            message: "两次密码不一致",
+            type: "error"
+        })
+        return false
+    }
+    // 获取验证码接口
+    const requestData = {
+                username: data.form.username,
+                module: "register"
+            }
+    // GetCode()
+    GetCode(requestData).then(response => {
+            console.log(response.data)
+            }).catch(error => {
+
+            })
+    // const requestData = {
+    //     username: data.form.username,
+    //     module: "register"
+    // }
+    // GetCode(requestData).then(response => {
+    //     console.log(response.data)
+    // }).catch(error => { 
+
+    // })
 }
 // 校验邮箱
 const validate_name_rules = (rule, value, callback) => {
@@ -141,7 +189,7 @@ const data = reactive({
         { type: "login", label: "登录" },
         { type: "register", label: "注册" }
     ],
-    current_menu: 'login'
+    current_menu: "login"
 })
 
 // 默认状态的高亮显示，就不会，两项高亮都显示
