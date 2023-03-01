@@ -7,7 +7,7 @@ module.exports = defineConfig({
     port: 8080, // 访问端口
     proxy: {
       [process.env.VUE_APP_API]: {
-        target: "process.env.VUE_API.DEV_TARGET", // (必选)API服务器的地址
+        target: process.env.VUE_API_DEV_TARGET, // (必选)API服务器的地址
         changeOrigin: true,                    // (必选) 是否允许跨越
         ws: false,                            // (可选) 是否启用websockets
         secure: false,                         // (可选) 是否启用https接口
