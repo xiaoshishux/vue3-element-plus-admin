@@ -29,7 +29,9 @@
                             <el-input v-model="data.form.code"></el-input>
                         </el-col>
                         <el-col :span="10">
-                            <el-button type="danger" class="el-button-block" @click="handlerGetCode">获取验证码</el-button>
+                            <el-button type="success" class="el-button-block" :loading="data.code_button_loading"
+                                :disabled="data.code_button_disabled" @click="handlerGetCode">{{ data.code_button_text
+                                }}</el-button>
                         </el-col>
                     </el-row>
                 </el-form-item>
@@ -53,56 +55,81 @@ import { response } from 'express';
 // console.log(instance)
 // console.log(ctx)
 // 获取验证码
-const { proxy } = getCurrentInstance()
+const { proxy } = getCurrentInstance();
 const handlerGetCode = () => {
-    const username = data.form.username
-    const password = data.form.password
-    const passwords = data.form.passwords
-    //   校验用户名
+    const username = data.form.username;
+    const password = data.form.password;
+    const passwords = data.form.passwords;
+    //   校验用户名
     if (!validate_email(username)) {
         proxy.$message({
             message: "用户名不能为空或格式不正确",
-            type: "error"
-        })
-        return false
+            type: "error",
+        });
+        return false;
     }
     // 校验密码
     if (!validate_password(password)) {
         proxy.$message({
             message: "密码不能为空或格式不正确",
-            type: "error"
-        })
-        return false
+            type: "error",
+        });
+        return false;
     }
     // 判断为 注册 时，校验两次密码
-    if (data.current_menu === 'register' && (password !== passwords)) {
+    if (data.current_menu === "register" && password !== passwords) {
         proxy.$message({
             message: "两次密码不一致",
-            type: "error"
-        })
-        return false
+            type: "error",
+        });
+        return false;
     }
     // 获取验证码接口
     const requestData = {
-                username: data.form.username,
-                module: "register"
-            }
-    // GetCode()
+        username: data.form.username,
+        module: "register"
+    }
+    data.code_button_loading = true;
+    data.code_button_text = "发送中";
     GetCode(requestData).then(response => {
-            console.log(response.data)
-            }).catch(error => {
-
-            })
-    // const requestData = {
-    //     username: data.form.username,
-    //     module: "register"
-    // }
-    // GetCode(requestData).then(response => {
-    //     console.log(response.data)
-    // }).catch(error => { 
-
-    // })
+        // 获取后端返回的数据
+        const resData = response;
+        // 激活提交按钮
+        data.submit_button_disabled = false;
+        // Elementui 提示
+        ctx.$message({
+            message: resData.message,
+            type: "success"
+        })
+        // 执行倒计时
+        countdown();
+    }).catch(error => {
+        data.code_button_loading = false;
+        data.code_button_text = "获取验证码";
+    })
 }
+
+// 倒计时
+const countdown = (time) => {
+    if (time && typeof time !== 'number') { return false; }
+    let second = time || 60;                     // 默认时间
+    data.code_button_loading = false;              // 取消加载
+    data.code_button_disabled = true;              // 禁用按钮
+    data.code_button_text = `倒计进${second}秒`;    // 按钮文本
+    // 判断是否存在定时器，存在则先清除   
+    if (data.code_button_timer) { clearInterval(data.code_button_timer) };
+    // 开启定时器  
+    data.code_button_timer = setInterval(() => {
+        second--;
+        data.code_button_text = `倒计进${second}秒`;  // 按钮文本
+        if (second <= 0) {
+            data.code_button_text = `重新获取`;         // 按钮文本
+            data.code_button_disabled = false;         // 启用按钮
+            clearInterval(data.code_button_timer);     // 清除倒计时
+        }
+    }, 1000)
+}
+
 // 校验邮箱
 const validate_name_rules = (rule, value, callback) => {
     let regEmail = validate_email(value)
@@ -189,7 +216,11 @@ const data = reactive({
         { type: "login", label: "登录" },
         { type: "register", label: "注册" }
     ],
-    current_menu: "login"
+    current_menu: "login",
+    code_button_disabled: false,
+    code_button_loading: false,
+    code_button_text: "获取验证码",
+    code_button_timer: null,
 })
 
 // 默认状态的高亮显示，就不会，两项高亮都显示
